@@ -1,0 +1,94 @@
+@extends('base')
+
+@section('content')
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h2 class="h4 mb-0">Colaboradores</h2>
+            <div class="small-muted">Adicione e gerencie os colaboradores da equipe</div>
+        </div>
+        <div>
+            <!-- botão para abrir modal de novo colaborador -->
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNew">
+                Adicionar colaborador
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal novo colaborador -->
+    <div class="modal fade" id="modalNew" tabindex="-1">
+        <div class="modal-dialog">
+            <form method="POST" action="{{ route('collaborators.new') }}" class="modal-content">
+                @csrf
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Novo colaborador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">Nome</label>
+                        <input name="name" class="form-control" required>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Telefone</label>
+                        <input name="phone" class="form-control">
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Email</label>
+                        <input name="email" class="form-control" type="email">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button class="btn btn-success">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de colaboradores em cards -->
+    <div class="row g-3">
+        @if($collaborators->count())
+            @foreach($collaborators as $c)
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ $c->name }}</h5>
+
+                            <p class="card-text small-muted mb-1">
+                                {{ $c->phone ?? '-' }}
+                            </p>
+
+                            <p class="card-text small-muted mb-2">
+                                {{ $c->email ?? '-' }}
+                            </p>
+
+                            <p class="card-text">
+                                <strong>Vendas:</strong> {{ $c->sales->count() }}
+                            </p>
+
+                            <div class="mt-auto">
+                                <a href=""
+                                   class="btn btn-sm btn-primary w-100">
+                                    Ver detalhes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        @else
+            <div class="col-12">
+                <div class="card card-body text-center small-muted">
+                    Nenhum colaborador cadastrado.
+                </div>
+            </div>
+        @endif
+    </div>
+@endsection
