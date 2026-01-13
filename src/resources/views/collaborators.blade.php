@@ -74,7 +74,7 @@
                             </p>
 
                             <div class="mt-auto">
-                                <a href=""
+                                <a href="{{ route('collaborator_detail', ['id' => $c->id]) }}"
                                    class="btn btn-sm btn-primary w-100">
                                     Ver detalhes
                                 </a>
