@@ -11,7 +11,7 @@
         </div>
       </div>
       <div>
-        <a href="" class="btn btn-outline-primary">
+        <a href="{{ route('sale_new') }}" class="btn btn-outline-primary">
           Registrar venda
         </a>
       </div>
