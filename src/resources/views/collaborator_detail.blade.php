@@ -186,8 +186,7 @@
                         <div class="d-flex gap-2">
 
                           {{-- marcar cliente pago --}}
-                          {{-- <form action="{{ route('installment.markClientPaid', $inst->id) }}" --}}
-                            <form action=""
+                          <form action="{{ route('markClientPaid', $inst->id) }}"
                                 method="post"
                                 class="d-inline">
                             @csrf
@@ -201,8 +200,7 @@
                           </form>
 
                           {{-- marcar colaborador pago --}}
-                          {{-- <form action="{{ route('installment.markCollaboratorPaid', $inst->id) }}" --}}
-                          <form action=""
+                          <form action="{{ route('markCollaboratorPaid', $inst->id) }}"
                                 method="post"
                                 class="d-inline">
                             @csrf

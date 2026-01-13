@@ -32,15 +32,15 @@
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="">Início</a>
+                    <a class="nav-link" href="{{ route('home') }}">Início</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="">
+                    <a class="nav-link" href="{{ route('collaborators') }}">
                         Colaboradores
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="">
+                    <a class="nav-link" href="{{ route('sale_new') }}">
                         Nova Venda
                     </a>
                 </li>
