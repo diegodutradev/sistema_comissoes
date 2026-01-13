@@ -2,7 +2,11 @@ version: "3.9"
 
 services:
   app:
-    image: php:8.2-cli
+    build:
+      context: .
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     working_dir: /var/www
     volumes:
       - ./src:/var/www
@@ -12,13 +16,11 @@ services:
       - mysql
     command: >
       sh -c "
-      apt-get update &&
-      apt-get install -y git unzip libzip-dev libpng-dev libonig-dev libxml2-dev &&
-      docker-php-ext-install pdo pdo_mysql zip &&
-      curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer &&
-      if [ ! -f artisan ]; then
-        composer create-project laravel/laravel .;
+      if [ ! -f .env ]; then
+        cp .env.example .env;
       fi &&
+      composer install &&
+      php artisan key:generate --force &&
       php artisan serve --host=0.0.0.0 --port=8000
       "
     environment:
@@ -30,9 +32,10 @@ services:
       DB_PASSWORD: laravel
   mysql:
     image: mysql:8.0
+    container_name: laravel_mysql
     restart: unless-stopped
     ports:
-      - "3307:3306"
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: laravel
