@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\UseCases\InstallmentUseCase;
 use App\Models\Installment;
+use App\Repository\InstallmentRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -16,7 +17,7 @@ class InstallmentController
 
     public function __construct()
     {
-        $this->installmentUseCase = new InstallmentUseCase();
+        $this->installmentUseCase = new InstallmentUseCase(new InstallmentRepository());
     }
 
     public function markClientPaid(Request $request, int $instId)
@@ -106,24 +107,13 @@ class InstallmentController
 
     public function markCollaboratorPaid(Request $request, int $inst)
     {
-        $installment = Installment::find($inst);
-
-        if (! $installment) {
+        $dateStr = $request->input('collaborator_paid_date');
+        $installment = $this->installmentUseCase->markCollaboratorPaid($inst, $dateStr);
+        if (!$installment) {
             return redirect()
                 ->route('index')
                 ->with('danger', 'Parcela não encontrada');
         }
-
-        $dateStr = $request->input('collaborator_paid_date');
-
-        $paidDate = $dateStr
-            ? Carbon::createFromFormat('Y-m-d', $dateStr)->toDateString()
-            : Carbon::today()->toDateString();
-
-        $installment->collaborator_paid = true;
-        $installment->collaborator_paid_date = $paidDate;
-        $installment->save();
-
         return redirect()
             ->back()
             ->with('success', 'Pagamento ao colaborador marcado.');
