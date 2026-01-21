@@ -2,16 +2,17 @@
 
 namespace App\UseCases;
 
+use App\DTO\CollaboratorDTO;
 use App\Models\Collaborator;
-use App\Repository\CollaboratorRepository;
+use App\Repository\Contracts\CollaboratorRepositoryInterface;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
 class CollaboratorUseCase
 {
-    protected CollaboratorRepository $collaboratorRepository;
+    protected CollaboratorRepositoryInterface $collaboratorRepository;
 
-    public function __construct(CollaboratorRepository $collaboratorRepository)
+    public function __construct(CollaboratorRepositoryInterface $collaboratorRepository)
     {
         $this->collaboratorRepository = $collaboratorRepository;
     }
@@ -20,16 +21,14 @@ class CollaboratorUseCase
         return $this->collaboratorRepository->getAllCollaborators();
     }
 
-    public function saveCollaborator($collaboratorDTO){
+    public function saveCollaborator(CollaboratorDTO $collaboratorDTO): bool {
         $collaborator = new Collaborator();
         $collaborator->name = $collaboratorDTO->name;
         $collaborator->phone = $collaboratorDTO->phone;
         $collaborator->email = $collaboratorDTO->email;
-
-        if(is_null($collaborator->name) || empty($collaborator->name)){
-            throw new Exception("Nome é Obrigatório!");
-        } 
-
-        $this->collaboratorRepository->saveCollaborator($collaborator);
+        if (empty($collaborator->name)) {
+           return false;
+        }
+        return $this->collaboratorRepository->saveCollaborator($collaborator);
     }
 }

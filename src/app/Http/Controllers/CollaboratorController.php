@@ -29,16 +29,12 @@ class CollaboratorController extends Controller
 
     public function create(Request $req): RedirectResponse
     {
-        // dd($req->post());
         $collaboratorFields = $req->post();
-
         $collaboratorDTO = new CollaboratorDTO();
-        $collaboratorDTO->name = $collaboratorFields['name'];
-        $collaboratorDTO->phone = $collaboratorFields['phone'];
-        $collaboratorDTO->email = $collaboratorFields['email'];
-
+        $collaboratorDTO->name = is_null($collaboratorFields['name']) ? '' : $collaboratorFields['name'];
+        $collaboratorDTO->phone = is_null($collaboratorFields['phone']) ? '' : $collaboratorFields['phone'];
+        $collaboratorDTO->email = is_null($collaboratorFields['email']) ? '' : $collaboratorFields['email'];
         $this->collaboratorUseCase->saveCollaborator($collaboratorDTO);
-
         return redirect()->route('collaborators');
     }
 
