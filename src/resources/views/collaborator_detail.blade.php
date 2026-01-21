@@ -1,0 +1,237 @@
+@extends('base')
+
+@section('content')
+<div class="row g-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div>
+        <h2 class="h4 mb-0">Colaborador — {{ $collaborator->name }}</h2>
+        <div class="small-muted">
+          {{ $collaborator->phone ?? '-' }} • {{ $collaborator->email ?? '-' }}
+        </div>
+      </div>
+      <div>
+        <a href="{{ route('sale_new') }}" class="btn btn-outline-primary">
+          Registrar venda
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {{-- LEFT COLUMN --}}
+  <div class="col-lg-4">
+    <div class="card card-highlight mb-3">
+      <div class="card-body">
+
+        <form method="get" class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label small-muted">Mês</label>
+            <input type="number"
+                   name="month"
+                   class="form-control form-control-sm"
+                   min="1"
+                   max="12"
+                   value="{{ $month }}">
+          </div>
+          <div class="col-6">
+            <label class="form-label small-muted">Ano</label>
+            <input type="number"
+                   name="year"
+                   class="form-control form-control-sm"
+                   value="{{ $year }}">
+          </div>
+          <div class="col-12">
+            <button class="btn btn-sm btn-primary mt-2 w-100">
+              Filtrar
+            </button>
+          </div>
+        </form>
+
+        <h6 class="mt-2">
+          Resumo do mês
+          <span class="small-muted">({{ $month }}/{{ $year }})</span>
+        </h6>
+
+        <div class="mt-3">
+          <div class="d-flex justify-content-between">
+            <div class="small-muted">Vendas com 1ª parcela paga</div>
+            <div>
+              <strong>R$ {{ number_format($total_vendido ?? 0, 2, ',', '.') }}</strong>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between mt-2">
+            <div class="small-muted">Percentual aplicado</div>
+            <div>
+              <span class="badge bg-info text-dark">
+                {{ number_format((($percentual ?? 1) - 1) * 100, 0) }}%
+              </span>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between mt-2">
+            <div class="small-muted">Comissão (extra) — vendas do mês</div>
+            <div>
+              <strong>R$ {{ number_format($valor_comissao ?? 0, 2, ',', '.') }}</strong>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="small-muted">Parcelas que CAEM neste mês</div>
+
+          <div class="d-flex justify-content-between mt-2">
+            <div class="small-muted">Provenientes do próprio mês</div>
+            <div>
+              <strong>R$ {{ number_format($total_from_current_sales ?? 0, 2, ',', '.') }}</strong>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between mt-2">
+            <div class="small-muted">Provenientes de meses anteriores</div>
+            <div>
+              <strong>R$ {{ number_format($total_from_previous_sales ?? 0, 2, ',', '.') }}</strong>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="d-flex justify-content-between">
+            <div class="small-muted">Total a pagar no mês</div>
+            <div class="fs-5 text-success">
+              R$ {{ number_format($total_to_pay ?? 0, 2, ',', '.') }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body small-muted">
+        Dica: marque "Cliente pagou" assim que confirmar o pagamento — o sistema calculará a data de repasse automaticamente.
+      </div>
+    </div>
+  </div>
+
+  {{-- RIGHT COLUMN --}}
+  <div class="col-lg-8">
+    <div class="row g-3">
+
+      @if($todas_vendas->count())
+        @foreach($todas_vendas as $s)
+          <div class="col-12">
+            <div class="card mb-2">
+
+              <div class="card-header d-flex justify-content-between align-items-start">
+                <div>
+                  <strong>{{ $s->client_name }}</strong>
+                  <div class="small-muted">
+                    Venda ID: {{ $s->id }} • Valor:
+                    R$ {{ number_format($s->amount, 2, ',', '.') }}
+                  </div>
+                  <div class="small-muted">
+                    1º pag.: {{ optional($s->client_first_payment_date)->format('d/m/Y') }}
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-secondary">
+                    Parcelas: {{ $s->installments->count() }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="list-group">
+
+                  @foreach($s->installments as $inst)
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+
+                      <div>
+                        <div>
+                          <strong>Parcela #{{ $inst->index }}</strong>
+                          <small class="small-muted ms-2">
+                            Vencimento cliente:
+                            {{ optional($inst->client_due_date)->format('d/m/Y') }}
+                          </small>
+                        </div>
+
+                        <div class="small-muted">
+                          Valor da parcela:
+                          R$ {{ number_format($inst->amount, 2, ',', '.') }}
+
+                          @if($inst->client_paid)
+                            • <span class="badge bg-success">
+                              Cliente pagou em {{ optional($inst->client_paid_date)->format('d/m/Y') }}
+                            </span>
+                          @else
+                            • <span class="badge bg-warning text-dark">
+                              Cliente pendente
+                            </span>
+                          @endif
+
+                          @if($inst->collaborator_paid)
+                            • <span class="badge bg-primary">
+                              Repasse feito em {{ optional($inst->collaborator_paid_date)->format('d/m/Y') }}
+                            </span>
+                          @endif
+                        </div>
+                      </div>
+
+                      <div class="d-flex flex-column align-items-end gap-1">
+                        <small class="small-muted">
+                          Recebimento ao colab.:
+                          {{ optional($inst->collaborator_receipt_date)->format('d/m/Y') ?? '-' }}
+                        </small>
+
+                        <div class="d-flex gap-2">
+
+                          {{-- marcar cliente pago --}}
+                          <form action="{{ route('markClientPaid', $inst->id) }}"
+                                method="post"
+                                class="d-inline">
+                            @csrf
+                            <input type="date"
+                                   name="client_paid_date"
+                                   class="form-control form-control-sm"
+                                   style="width:150px;">
+                            <button class="btn btn-sm btn-outline-success">
+                              Cliente pagou
+                            </button>
+                          </form>
+
+                          {{-- marcar colaborador pago --}}
+                          <form action="{{ route('markCollaboratorPaid', $inst->id) }}"
+                                method="post"
+                                class="d-inline">
+                            @csrf
+                            <input type="date"
+                                   name="collaborator_paid_date"
+                                   class="form-control form-control-sm"
+                                   style="width:150px;">
+                            <button class="btn btn-sm btn-outline-primary">
+                              Colab. recebeu
+                            </button>
+                          </form>
+
+                        </div>
+                      </div>
+                    </div>
+                  @endforeach
+
+                </div>
+              </div>
+            </div>
+          </div>
+        @endforeach
+      @else
+        <div class="col-12">
+          <div class="card card-body text-center small-muted">
+            Nenhuma venda registrada.
+          </div>
+        </div>
+      @endif
+
+    </div>
+  </div>
+</div>
+@endsection
