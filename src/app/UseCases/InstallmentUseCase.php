@@ -16,7 +16,7 @@ class InstallmentUseCase
     }
     
     public function markCollaboratorPaid(int $inst, $dateStr) {
-        $installment = Installment::find($inst);
+        $installment = $this->installmentRepository->findOne($inst);
         if (!$installment) {    
            return null;
         }

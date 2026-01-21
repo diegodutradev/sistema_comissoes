@@ -40,5 +40,9 @@ class InstallmentRepository {
             ->with('sale')
             ->get();
     }
+
+    public function findOne(int $inst) {
+        return Installment::find($inst);
+    }
 }
 
