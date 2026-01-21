@@ -4,7 +4,7 @@ namespace App\DTO;
 
 class CollaboratorDTO
 {
-    public $name;
-    public $phone;
-    public $email;
+    public string $name;
+    public string $phone;
+    public string $email;
 }
