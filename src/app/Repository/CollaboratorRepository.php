@@ -17,4 +17,8 @@ class CollaboratorRepository implements CollaboratorRepositoryInterface
     {
         return $collaborator->save();
     }
+    public function findOne(int $cid)
+    {
+        return Collaborator::find($cid);
+    }
 }

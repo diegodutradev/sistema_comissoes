@@ -23,4 +23,9 @@ class FakeCollaboratorRepository implements CollaboratorRepositoryInterface
     {
         return true;
     }
+     
+    public function findOne(int $cid) 
+    {
+        return null;
+    }
 }
