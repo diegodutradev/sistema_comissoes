@@ -51,10 +51,10 @@
             <div class="card-body d-flex flex-column">
                 <h5 class="card-title">Relatórios</h5>
                 <p class="small-muted mb-3">
-                    Resumo mensal por colaborador (em breve).
+                    Resumo mensal por colaborador.
                 </p>
                 <a href="{{ route('graphicsHome') }}"
-                   class="mt-auto btn btn-outline-secondary">
+                   class="mt-auto btn btn-outline-primary">
                     Ver Relatórios
                 </a>
             </div>
