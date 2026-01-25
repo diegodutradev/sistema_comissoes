@@ -53,7 +53,7 @@
                 <p class="small-muted mb-3">
                     Resumo mensal por colaborador (em breve).
                 </p>
-                <a href=""
+                <a href="{{ route('graphicsHome') }}"
                    class="mt-auto btn btn-outline-secondary">
                     Ver Relatórios
                 </a>
