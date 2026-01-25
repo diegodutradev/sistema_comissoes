@@ -15,11 +15,21 @@
     <div class="col-12">
         <div class="card card-highlight">
             <div class="card-body">
+                @php
+                    $months = [
+                        1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março',
+                        4 => 'Abril', 5 => 'Maio', 6 => 'Junho',
+                        7 => 'Julho', 8 => 'Agosto', 9 => 'Setembro',
+                        10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro'
+                    ];
+                @endphp
+
                 <form method="get" class="row g-3 align-items-end">
 
+                    {{-- COLABORADOR --}}
                     <div class="col-md-4">
                         <label class="form-label small-muted">Colaborador</label>
-                        <select name="collaborator_id" class="form-select">
+                        <select name="collaborator_id" class="form-select" required>
                             <option value="">Selecione</option>
                             @foreach($collaborators as $c)
                                 <option value="{{ $c->id }}"
@@ -30,23 +40,30 @@
                         </select>
                     </div>
 
+                    {{-- MÊS --}}
                     <div class="col-md-3">
                         <label class="form-label small-muted">Mês</label>
-                        <input type="number"
-                               name="month"
-                               class="form-control"
-                               min="1" max="12"
-                               value="{{ request('month') }}">
+                        <select name="month" class="form-select" required>
+                            @foreach($months as $number => $label)
+                                <option value="{{ $number }}"
+                                    @selected(request('month', now()->month) == $number)>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
+                    {{-- ANO --}}
                     <div class="col-md-3">
                         <label class="form-label small-muted">Ano</label>
                         <input type="number"
                                name="year"
                                class="form-control"
-                               value="{{ request('year') }}">
+                               min="2020"
+                               value="{{ request('year', now()->year) }}">
                     </div>
 
+                    {{-- BOTÃO --}}
                     <div class="col-md-2">
                         <button class="btn btn-primary w-100">
                             Filtrar
@@ -94,13 +111,19 @@
         </div>
     @endisset
 
-    {{-- GRÁFICO --}}
+    {{-- GRÁFICO MENOR --}}
     @isset($summary)
         <div class="col-12">
             <div class="card card-highlight">
                 <div class="card-body">
                     <h6 class="mb-3">Distribuição de Pagamentos</h6>
-                    <canvas id="paymentsChart" height="100"></canvas>
+
+                    <div class="d-flex justify-content-center">
+                        <div style="max-width: 300px;">
+                            <canvas id="paymentsChart"></canvas>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -125,6 +148,15 @@
                     {{ $summary['pending'] }}
                 ]
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
         }
     });
 </script>

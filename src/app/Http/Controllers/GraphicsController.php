@@ -26,7 +26,6 @@ class GraphicsController extends Controller
 
             $end = (clone $start)->endOfMonth();
 
-            // Parcelas do colaborador no período
             $installments = Installment::whereHas('sale', function ($q) use ($request) {
                     $q->where('collaborator_id', $request->collaborator_id);
                 })
