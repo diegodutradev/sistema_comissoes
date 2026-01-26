@@ -2,70 +2,155 @@
 
 @section('content')
 <div class="row justify-content-center">
-  <div class="col-lg-8">
-    <div class="card card-body">
-      <h4 class="mb-3">Nova Venda</h4>
+    <div class="col-lg-6 col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
 
-      {{-- <form method="post" action="{{ route('sale.new') }}"> --}}
-      <form method="post" action="">
-        @csrf
+                <h4 class="mb-4 text-center">Nova Venda</h4>
 
-        <div class="row g-3">
+                <form method="post" action="">
+                    @csrf
 
-          <div class="col-md-6">
-            <label class="form-label">Colaborador</label>
-            <select name="collaborator_id" class="form-select" required>
-              <option value="">Escolha...</option>
-              @foreach($collaborators as $c)
-                <option value="{{ $c->id }}">
-                  {{ $c->name }}
-                </option>
-              @endforeach
-            </select>
-          </div>
+                    {{-- Colaborador --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Colaborador</label>
+                        <select
+                            name="collaborator_id"
+                            id="collaborator_id"
+                            class="form-select @error('collaborator_id') is-invalid @enderror"
+                            required
+                        >
+                            <option value="">Selecione um colaborador</option>
+                            @foreach($collaborators as $c)
+                                <option
+                                    value="{{ $c->id }}"
+                                    {{ old('collaborator_id') == $c->id ? 'selected' : '' }}
+                                >
+                                    {{ $c->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('collaborator_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-          <div class="col-md-6">
-            <label class="form-label">Nome do cliente</label>
-            <input
-              name="client_name"
-              class="form-control"
-              required
-              value="{{ old('client_name') }}"
-            >
-          </div>
+                    {{-- CAMPOS BLOQUEADOS ATÉ ESCOLHER COLABORADOR --}}
+                    <fieldset id="sale-fields" disabled>
 
-          <div class="col-md-4">
-            <label class="form-label">Valor da venda (R$)</label>
-            <input
-              type="number"
-              step="0.01"
-              name="amount"
-              class="form-control"
-              required
-              value="{{ old('amount') }}"
-            >
-          </div>
+                        {{-- Nome do cliente --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Nome do cliente</label>
+                            <input
+                                type="text"
+                                name="client_name"
+                                class="form-control @error('client_name') is-invalid @enderror"
+                                placeholder="Ex: João da Silva"
+                                value="{{ old('client_name') }}"
+                                required
+                            >
+                            @error('client_name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-          <div class="col-md-4">
-            <label class="form-label">1º pagamento do cliente</label>
-            <input
-              type="date"
-              name="client_first_payment_date"
-              class="form-control"
-              required
-              value="{{ old('client_first_payment_date') }}"
-            >
-          </div>
+                        {{-- Valor da venda --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Valor da venda</label>
 
-          <div class="col-md-4 d-flex align-items-end">
-            <button class="btn btn-primary w-100">
-              Salvar venda
-            </button>
-          </div>
+                            <input
+                                type="text"
+                                id="amount_display"
+                                class="form-control"
+                                placeholder="R$ 0,00"
+                                autocomplete="off"
+                                required
+                            >
 
+                            <input
+                                type="hidden"
+                                name="amount"
+                                id="amount"
+                                value="{{ old('amount') }}"
+                            >
+
+                            @error('amount')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Data do primeiro pagamento --}}
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                Data do 1º pagamento do cliente
+                            </label>
+                            <input
+                                type="date"
+                                name="client_first_payment_date"
+                                class="form-control @error('client_first_payment_date') is-invalid @enderror"
+                                value="{{ old('client_first_payment_date') }}"
+                                required
+                            >
+                            @error('client_first_payment_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Botão --}}
+                        <div class="d-grid">
+                            <button class="btn btn-primary btn-lg">
+                                Salvar venda
+                            </button>
+                        </div>
+
+                    </fieldset>
+
+                </form>
+
+            </div>
         </div>
-      </form>
     </div>
-  </div>
 </div>
+
+{{-- JS: Ativar campos + Formatação BRL --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const collaborator = document.getElementById('collaborator_id');
+    const saleFields  = document.getElementById('sale-fields');
+
+    const display = document.getElementById('amount_display');
+    const hidden  = document.getElementById('amount');
+
+    // Ativa/desativa campos conforme colaborador
+    function toggleFields() {
+        saleFields.disabled = !collaborator.value;
+    }
+
+    collaborator.addEventListener('change', toggleFields);
+
+    // Aplica estado inicial (caso tenha old())
+    toggleFields();
+
+    // ====== FORMATAÇÃO MOEDA BRL ======
+    function formatBRL(value) {
+        value = value.replace(/\D/g, '');
+        value = (value / 100).toFixed(2);
+        value = value.replace('.', ',');
+        value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        return 'R$ ' + value;
+    }
+
+    display.addEventListener('input', function () {
+        const raw = this.value.replace(/\D/g, '');
+        hidden.value = raw ? (raw / 100).toFixed(2) : '';
+        this.value = raw ? formatBRL(raw) : '';
+    });
+
+    // Reaplica valor antigo (old)
+    if (hidden.value) {
+        display.value = formatBRL(hidden.value.replace('.', ''));
+    }
+});
+</script>
 @endsection
