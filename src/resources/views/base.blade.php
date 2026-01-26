@@ -21,7 +21,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-white bg-white border-bottom">
     <div class="container">
-        <a class="navbar-brand brand" href="">
+        <a class="navbar-brand brand" href="{{ route('home') }}">
             Comissões Saúde
         </a>
 
@@ -42,6 +42,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('sale_new') }}">
                         Nova Venda
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('graphicsHome') }}">
+                        Relatórios
                     </a>
                 </li>
             </ul>
