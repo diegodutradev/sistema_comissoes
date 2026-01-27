@@ -144,9 +144,10 @@
     <div class="col-lg-8">
         <div class="row g-3">
 
-            @forelse($todas_vendas as $s)
-                <div class="col-12">
-                    <div class="card shadow-sm">
+            @forelse($todas_vendas->sortByDesc('id') as $s)
+                {{-- CARD MAIS ESTREITO / 2 POR LINHA --}}
+                <div class="col-12 col-md-6">
+                    <div class="card shadow-sm h-100">
 
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <div>
@@ -217,6 +218,7 @@
                                 </div>
                             @endforeach
                         </div>
+
                     </div>
                 </div>
             @empty
