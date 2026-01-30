@@ -52,7 +52,7 @@ class InstallmentController
             /**
              * Se for a 1ª parcela, recalcula e distribui o extra
              */
-            if ($inst->index === 1) {
+            if ($inst->index === 1 && $inst->sale->client_type == SaleController::CLIENTPME) {
                 $collabId = $inst->sale->collaborator_id;
                 $month = $clientPaidDate->month;
                 $year  = $clientPaidDate->year;
@@ -64,7 +64,6 @@ class InstallmentController
                         $month,
                         $year
                     );
-
                 $totalPaidSales = $firstPaid->sum(function ($fi) {
                     return $fi->sale->amount;
                 });
@@ -118,7 +117,7 @@ class InstallmentController
             ->back()
             ->with('success', 'Pagamento ao colaborador marcado.');
     }
-    
+
     /**
      * Equivalente ao compute_collaborator_receipt_date do Python
      */
