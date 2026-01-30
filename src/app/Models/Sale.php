@@ -33,6 +33,6 @@ class Sale  extends Model
 
     public function installments(): HasMany
     {
-        return $this->hasMany(CommissionInstallment::class);
+        return $this->hasMany(Installment::class);
     }
 }

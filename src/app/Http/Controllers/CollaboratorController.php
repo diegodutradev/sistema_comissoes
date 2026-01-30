@@ -6,7 +6,6 @@ use App\DTO\CollaboratorDTO;
 use Illuminate\Http\Request;
 use App\Repository\CollaboratorRepository;
 use App\UseCases\CollaboratorUseCase;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -27,21 +26,105 @@ class CollaboratorController extends Controller
 
     public function create(Request $req): RedirectResponse
     {
-        // dd($req->post());
         $collaboratorFields = $req->post();
-
         $collaboratorDTO = new CollaboratorDTO();
-        $collaboratorDTO->name = $collaboratorFields['name'];
-        $collaboratorDTO->phone = $collaboratorFields['phone'];
-        $collaboratorDTO->email = $collaboratorFields['email'];
-
+        $collaboratorDTO->name = is_null($collaboratorFields['name']) ? '' : $collaboratorFields['name'];
+        $collaboratorDTO->phone = is_null($collaboratorFields['phone']) ? '' : $collaboratorFields['phone'];
+        $collaboratorDTO->email = is_null($collaboratorFields['email']) ? '' : $collaboratorFields['email'];
         $this->collaboratorUseCase->saveCollaborator($collaboratorDTO);
-
         return redirect()->route('collaborators');
     }
 
-    public function find($id): View
+    // public function find(Request $request, int $cid)
+    // {
+    //      // Filtro de mês e ano (default = atual)
+    //     $month = (int) $request->query('month', now()->month);
+    //     $year  = (int) $request->query('year', now()->year);
+    
+    //     $collaboratorDetails = $this->collaboratorUseCase->findOne($cid, $month, $year);
+    //     if (!$collaboratorDetails) {
+    //         return redirect()
+    //             ->route('index')
+    //             ->with('danger', 'Colaborador não encontrado');
+    //     }
+    //     return view('collaborator_detail', [
+    //         'collaborator'             => $collaboratorDetails->collaborator,
+    //         'total_vendido'            => $collaboratorDetails->totalVendido,
+    //         'percentual'               => $collaboratorDetails->percentual,
+    //         'valor_comissao'           => $collaboratorDetails->valorComissao,
+    //         'total_from_current_sales' => $collaboratorDetails->totalFromCurrentSales,
+    //         'total_from_previous_sales'=> $collaboratorDetails->totalFromPreviousSales,
+    //         'total_to_pay'             => $collaboratorDetails->totalToPay,
+    //         'todas_vendas'             => $collaboratorDetails->todasVendas,
+    //         'month'                    => $collaboratorDetails->month,
+    //         'year'                     => $collaboratorDetails->year,
+    //     ]);
+    // }
+
+    public function find(Request $request, int $cid)
     {
-        return view('welcome');
+    // Filtro de mês e ano (default = atual)
+    $month = (int) $request->query('month', now()->month);
+    $year  = (int) $request->query('year', now()->year);
+
+    $collaboratorDetails = $this->collaboratorUseCase->findOne($cid, $month, $year);
+
+    if (!$collaboratorDetails) {
+        return redirect()
+            ->route('index')
+            ->with('danger', 'Colaborador não encontrado');
+    }
+
+    // 🔹 Coleta todas as parcelas de todas as vendas
+    $installments = collect($collaboratorDetails->todasVendas)
+        ->flatMap(fn ($sale) => $sale->installments);
+
+    // 🔹 Estatísticas globais do colaborador
+    $stats = [
+        'sales' => collect($collaboratorDetails->todasVendas)->count(),
+
+        'installments' => $installments->count(),
+
+        'paid_installments' => $installments
+            ->where('client_paid', true)
+            ->count(),
+
+        'pending_installments' => $installments
+            ->where('client_paid', false)
+            ->count(),
+
+        'received' => $installments
+            ->where('collaborator_paid', true)
+            ->sum('amount'),
+
+        'pending' => $installments
+            ->where('client_paid', true)
+            ->where('collaborator_paid', false)
+            ->sum('amount'),
+
+        'total' => $installments->sum('amount'),
+    ];
+
+    return view('collaborator_detail', [
+        'collaborator'              => $collaboratorDetails->collaborator,
+
+        // 🔹 dados antigos (mantidos)
+        'total_vendido'             => $collaboratorDetails->totalVendido,
+        'percentual'                => $collaboratorDetails->percentual,
+        'valor_comissao'            => $collaboratorDetails->valorComissao,
+        'total_from_current_sales'  => $collaboratorDetails->totalFromCurrentSales,
+        'total_from_previous_sales' => $collaboratorDetails->totalFromPreviousSales,
+        'total_to_pay'              => $collaboratorDetails->totalToPay,
+
+        // 🔹 novos dados
+        'stats'                     => $stats,
+
+        // 🔹 vendas
+        'todas_vendas'              => $collaboratorDetails->todasVendas,
+
+        // 🔹 filtro
+        'month'                     => $collaboratorDetails->month,
+        'year'                      => $collaboratorDetails->year,
+    ]);
     }
 }
