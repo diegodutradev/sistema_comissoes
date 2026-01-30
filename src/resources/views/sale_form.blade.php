@@ -54,6 +54,31 @@
                             @enderror
                         </div>
 
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tipo de Cliente</label>
+                            <select
+                                name="client_type"
+                                id="client_type"
+                                class="form-select @error('client_type') is-invalid @enderror"
+                                required>
+                                <option value="">Selecione um tipo de cliente</option>
+                                <option value="1">PME</option>
+                                <option value="2">Pessoa Física</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="bonification_amount_div" hidden>
+                            <label class="form-label fw-semibold">Valor da bonificação</label>
+                            <input
+                                type="text"
+                                name="bonification_amount"
+                                id="bonification_amount"
+                                class="form-control @error('bonification_amount') is-invalid @enderror"
+                                placeholder="Ex: 1000"
+                                value="{{ old('bonification_amount') }}"
+                            >
+                        </div>
+
                         {{-- Valor da venda --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Valor da venda</label>
@@ -151,6 +176,23 @@ document.addEventListener('DOMContentLoaded', function () {
     if (hidden.value) {
         display.value = formatBRL(hidden.value.replace('.', ''));
     }
+    const clientType = document.getElementById('client_type');
+    clientType.addEventListener('change', function() {
+        if (this.value == 1) {
+            let bonificationAmountDiv = document.getElementById('bonification_amount_div')
+            bonificationAmountDiv.setAttribute('hidden', 'hidden')
+            let bonificationAmountInput = document.getElementById('bonification_amount')
+            bonificationAmountInput.removeAttribute('required')
+
+        } else if (this.value == 2) {
+            let bonificationAmountDiv = document.getElementById('bonification_amount_div')
+            bonificationAmountDiv.removeAttribute('hidden')
+            let bonificationAmountInput = document.getElementById('bonification_amount')
+            bonificationAmountInput.setAttribute('required', 'required')
+
+        }
+
+    })
 });
 </script>
 @endsection

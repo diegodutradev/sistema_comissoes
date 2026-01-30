@@ -13,6 +13,8 @@ use Carbon\Carbon;
 
 class SaleController
 {
+    const CLIENTPME = 1;
+    const CLIENTPF = 2;
     protected SaleUseCase $saleUseCase;
 
     public function __construct()
@@ -42,10 +44,17 @@ class SaleController
         $clientName = $request->input('client_name');
         $amount = (float) ($request->input('amount') ?? 0);
         $firstPaymentStr = $request->input('client_first_payment_date');
+        $clientType = $request->input('client_type');
+        $bonificationAmount = $request->input('bonification_amount');
 
-        if (!$collabId || !$clientName || !$amount || !$firstPaymentStr) {
+        if (!$collabId || !$clientName || !$amount || !$firstPaymentStr || !$clientType) {
             return redirect()
-                ->route('sale.new')
+                ->route('sale_new')
+                ->with('danger', 'Preencha todos os campos');
+        }
+        if ($clientType == self::CLIENTPF && !$bonificationAmount) {
+            return redirect()
+                ->route('sale_new')
                 ->with('danger', 'Preencha todos os campos');
         }
 
@@ -58,7 +67,9 @@ class SaleController
             $collabId,
             $clientName,
             $amount,
-            $clientFirstPaymentDate
+            $clientFirstPaymentDate,
+            $clientType,
+            $bonificationAmount
         ) {
             /**
              * Cria a venda
@@ -67,24 +78,39 @@ class SaleController
                 'collaborator_id' => (int) $collabId,
                 'client_name' => $clientName,
                 'amount' => $amount,
+                'client_type' => $clientType,
                 'client_first_payment_date' => $clientFirstPaymentDate,
             ]);
 
-            /**
-             * Cria 3 parcelas
-             * 1ª: valor total
-             * 2ª e 3ª: 0.0
-             */
-            for ($i = 0; $i < 3; $i++) {
-                Installment::create([
-                    'sale_id' => $sale->id,
-                    'index' => $i + 1,
-                    'client_due_date' => $this->addMonths(
-                        $clientFirstPaymentDate,
-                        $i
-                    ),
-                    'amount' => $i === 0 ? round($amount, 2) : 0.0,
-                ]);
+            if ($clientType == self::CLIENTPME) {
+                /**
+                 * Cria 3 parcelas
+                 * 1ª: valor total
+                 * 2ª e 3ª: 0.0
+                 */
+                for ($i = 0; $i < 3; $i++) {
+                    Installment::create([
+                        'sale_id' => $sale->id,
+                        'index' => $i + 1,
+                        'client_due_date' => $this->addMonths(
+                            $clientFirstPaymentDate,
+                            $i
+                        ),
+                        'amount' => $i === 0 ? round($amount, 2) : 0.0,
+                    ]);
+                }
+            } elseif ($clientType == self::CLIENTPF) {
+                for ($i = 0; $i < 2; $i++) {
+                    Installment::create([
+                        'sale_id' => $sale->id,
+                        'index' => $i + 1,
+                        'client_due_date' => $this->addMonths(
+                            $clientFirstPaymentDate,
+                            $i
+                        ),
+                        'amount' => $i === 0 ? round($amount, 2) : $bonificationAmount,
+                    ]);
+                }
             }
         });
 

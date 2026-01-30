@@ -18,6 +18,7 @@ class Sale  extends Model
         'amount',
         'client_first_payment_date',
         'created_at',
+        'client_type',
     ];
 
     protected $casts = [
